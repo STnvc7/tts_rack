@@ -1,0 +1,50 @@
+hydra:
+    run:
+        dir: ${general.exp_path}
+
+defaults:
+    - _self_
+    - corpus: hifi_captain_male_jp
+    - dsp: 24k
+    - text: ja
+    - engine: acoustic/fastspeech2
+    - metrics: basic
+
+general:
+    project_name: tts_rack
+    group_name: develop
+    exp_name: example
+    exp_path: ./exp/${general.project_name}/${general.group_name}/${general.exp_name}
+    restore_checkpoint: null
+    analysis: False
+    seed: 42
+    train_steps: 1_000_000
+    batch_size: 4
+    learning_rate: 0.0002
+    n_save_samples:
+        valid: 8
+        test: 20
+    segment_size:
+        train: 65536
+        valid: 65536
+        test: null
+trainer:
+    _target_: lightning.Trainer
+    accelerator: gpu
+    devices: 1
+    strategy: auto
+    max_steps: ${general.train_steps}
+    precision: 32
+    logger:
+        _target_: lightning.pytorch.loggers.CSVLogger
+        save_dir: ./exp/${general.project_name}/${general.group_name}
+        name: ${general.exp_name}
+        version: .
+    callbacks:
+        - _target_: lightning.pytorch.callbacks.ModelCheckpoint
+          dirpath: ${general.exp_path}/checkpoints
+          monitor: valid_loss
+          mode: min
+          save_top_k: 1
+          filename: "{epoch}-{valid_loss:.2f}"
+          save_last: true

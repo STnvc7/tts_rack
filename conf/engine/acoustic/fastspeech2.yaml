@@ -1,0 +1,41 @@
+defaults:
+  - _self_
+  - acoustic/model: fastspeech2
+  - acoustic/loss: fastspeech2
+  - optimizer: adam_w
+  - scheduler: exponential
+  
+name: fastspeech2
+
+data_module:
+  _target_: data.TTSDataModule
+  corpus: ${corpus.config}
+  dsp_processor: ${dsp.config}
+  text_processor: ${text.config}
+  features_to_extract: [mel_spectrogram, pitch, mel_energy]
+  require_duration: true
+  segment_size:
+    train: null
+    valid: null
+    test: null
+  trim: forward
+  normalize: loudness
+  batch_size: ${general.batch_size}
+  num_workers: 12
+  pin_memory: true
+  
+lightning_module:
+  _target_: engine.acoustic.AcousticModelEngine
+  model: ${engine.acoustic.model}
+  loss: ${engine.acoustic.loss}
+  optimizer: ${engine.optimizer}
+  scheduler: ${engine.scheduler}
+  dsp_processor: ${dsp.config}
+  exp_path: ${general.exp_path}
+  controls:
+    - pitch_mean_alpha: 0.75
+    - pitch_mean_alpha: 1.5
+    - pitch_std_alpha: 0.5
+    - pitch_std_alpha: 2.0
+  n_valid_log_samples: 8
+  n_test_save_samples: 20

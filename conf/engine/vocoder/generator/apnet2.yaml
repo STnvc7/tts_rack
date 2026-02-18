@@ -1,0 +1,13 @@
+_target_: engine.vocoder.apnet2.APNet2Generator
+n_mels: ${dsp.config.n_mels}
+fft_size: ${dsp.config.fft_size}
+hop_size: ${dsp.config.hop_size}
+asp_channel: 512
+asp_input_conv_kernel_size: 7
+asp_output_conv_kernel_size: 7
+psp_channel: 512
+psp_input_conv_kernel_size: 7
+psp_output_real_conv_kernel_size: 7
+psp_output_imag_conv_kernel_size: 7
+convnext_intermediate_dim: 1536
+convnext_n_layers: 8

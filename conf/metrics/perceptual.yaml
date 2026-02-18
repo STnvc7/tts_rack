@@ -1,0 +1,18 @@
+_target_: metric_board.Evaluator
+metrics:
+  dnsmos:
+    _target_: metric_board.metrics.DNSMOS
+    sample_rate: ${dsp.config.sample_rate}
+    submetric: p808
+  pesq:
+    _target_: metric_board.metrics.PESQ
+    original_sample_rate: ${dsp.config.sample_rate}
+    metric_sample_rate: 16000
+    mode: wb
+  stoi:
+    _target_: metric_board.metrics.STOI
+    sample_rate: ${dsp.config.sample_rate}
+    extended: true
+  utmos:
+    _target_: metric_board.metrics.UTMOS
+    sample_rate: ${dsp.config.sample_rate}

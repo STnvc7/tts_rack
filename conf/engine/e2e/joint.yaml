@@ -1,0 +1,72 @@
+defaults:
+  - _self_
+  - acoustic/model: fastspeech2
+  - acoustic/loss: fastspeech2
+  - vocoder/generator: hifi_gan
+  - vocoder/discriminator: hifi_gan
+  - vocoder/loss: hifi_gan
+  - optimizer: adam_w
+  - scheduler: exponential
+  
+name: joint training 
+
+data_module:
+  _target_: data.TTSDataModule
+  corpus: ${corpus}
+  dsp_processor: ${dsp}
+  text_processor: ${text}
+  features_to_extract: [mel_spectrogram, pitch, mel_energy]
+  require_duration: true
+  segment_size: ${general.segment_size} 
+  trim: forward
+  normalize: loudness
+  batch_size: ${general.batch_size}
+  num_workers: 12
+  pin_memory: true
+  
+lightning_module:
+  _target_: engine.e2e.E2EEngine
+  model:
+    _target_: engine.e2e.joint.JointModel
+    acoustic_model: ${engine.acoustic.model}
+    generator: ${engine.vocoder.generator}
+    teacher_forcing_until:
+      mel_spectrogram: null
+      pitch: -1
+    freeze_acoustic_model: false
+    detach_between: true
+    pretrained_acoustic_model_path: null
+    pretrained_generator_path: null
+  discriminator: ${engine.vocoder.discriminator}
+  loss:
+    _target_: engine.e2e.joint.JointLoss
+    acoustic_loss: ${engine.acoustic.loss}
+    generator_loss: ${engine.vocoder.loss.generator}
+  discriminator_loss: ${engine.vocoder.loss.discriminator}
+  optimizer: ${engine.optimizer}
+  scheduler: ${engine.scheduler}
+  dsp_processor: ${dsp}
+  valid_metrics:
+    _target_: metric_board.Evaluator
+    metrics:
+      spectrogram:
+        _target_: metric_board.metrics.Spectrogram
+        fft_size: ${dsp.fft_size}
+        hop_size: ${dsp.hop_size}
+        distance: mae
+      mel_spectrogram:
+        _target_: metric_board.metrics.MelSpectrogram
+        sample_rate: ${dsp.sample_rate}
+        fft_size: ${dsp.fft_size}
+        hop_size: ${dsp.hop_size}
+        n_mels: ${dsp.n_mels}
+        distance: mae
+  test_metrics: ${metrics}
+  exp_path: ${general.exp_path}
+  controlls:
+    - pitch_mean_alpha: 0.75
+    - pitch_mean_alpha: 1.5
+    - pitch_std_alpha: 0.5
+    - pitch_std_alpha: 2.0
+  n_valid_log_samples: 8
+  n_test_save_samples: 20

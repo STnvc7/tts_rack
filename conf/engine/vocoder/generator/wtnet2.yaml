@@ -1,0 +1,15 @@
+_target_: engine.vocoder.wtnet2.WTNet2GeneratorExperiment
+n_sample: 256
+fft_size: ${dsp.config.fft_size}
+hop_size: ${dsp.config.hop_size}
+sample_rate: ${dsp.config.sample_rate}
+n_mels: ${dsp.config.n_mels}
+channel: 32
+h_channel: 64
+n_groups: 2
+kernel_sizes: [7,7,7,7,7,7,7,7]
+activation:
+  _target_: torch.nn.GELU
+filter_n_bands: 128
+noise_distribution: "mixture"
+noise_n_components: 10

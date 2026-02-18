@@ -1,0 +1,12 @@
+_target_: engine.vocoder.wavehax.WavehaxGenerator
+in_channels: ${dsp.config.n_mels}
+channels: 32
+mult_channels: 2
+kernel_size: 7
+num_blocks: 8
+n_fft: 512
+# n_fft: ${dsp.fft_size}
+hop_length: ${dsp.config.hop_size}
+sample_rate: ${dsp.config.sample_rate}
+drop_prob: 0.0
+use_logmag_phase: false

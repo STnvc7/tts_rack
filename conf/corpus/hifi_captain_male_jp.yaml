@@ -1,0 +1,18 @@
+name: hifi_captain_male_jp
+utterance_list_maker:
+    _target_: utterance_list_maker.HiFiCaptainUtteranceListMaker
+    corpus: ${corpus.config}
+config:
+  _target_: interface.corpus.Corpus
+  n_speakers: 1
+  n_phonemes: ${text.config.n_phonemes}
+  n_prosodies: ${text.config.n_prosodies}
+  lang: ja
+  root: ./data/hifi_captain/hi-fi-captain/ja-JP/male
+  utterance_list_path:
+    _target_: interface.corpus.UtteranceListPath
+    train: ./data/hifi_captain/male_jp/utterance_list/train.yaml
+    valid: ./data/hifi_captain/male_jp/utterance_list/valid.yaml
+    test: ./data/hifi_captain/male_jp/utterance_list/test.yaml
+  feature_stats_path: ./data/hifi_captain/male_jp/stats/${dsp.name}.yaml
+  feature_stats: ${create_feature_stats:${corpus.config.feature_stats_path}}

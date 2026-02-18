@@ -1,0 +1,18 @@
+name: 24k
+config:
+  _target_: dsp.DSPProcessor
+  sample_rate: 24000
+  hop_size: 256
+  fft_size: 1024
+  window_size: 1024
+  n_mels: 80
+  n_mfcc: 13
+  n_mcep: 39
+  n_mgc: 24
+  eps: 1.0e-8
+  pitch_extract_method: harvest
+  trim_direction: forward
+  trim_trigger_level: 5.0
+  trim_trigger_time: 0.25
+  target_lufs: -24.0
+  target_db: -6.0

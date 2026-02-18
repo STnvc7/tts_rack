@@ -1,0 +1,3 @@
+discriminator: null
+generator:
+  _target_: engine.vocoder.wavegrad.WaveGradLoss

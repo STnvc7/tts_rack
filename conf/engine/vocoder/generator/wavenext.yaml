@@ -1,0 +1,7 @@
+_target_: engine.vocoder.wavenext.WaveNeXtGenerator
+input_channels: ${dsp.config.n_mels}
+dim: 512
+intermediate_dim: 1536
+num_layers: 8
+fft_size: ${dsp.config.fft_size}
+hop_size: ${dsp.config.hop_size}

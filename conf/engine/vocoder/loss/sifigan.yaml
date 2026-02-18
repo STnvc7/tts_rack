@@ -1,0 +1,12 @@
+discriminator:
+  _target_: engine.vocoder.hifi_gan.HiFiGANDiscriminatorLoss
+generator:
+  _target_: engine.vocoder.sifigan.SiFiGANGeneratorLoss
+  sample_rate: ${dsp.config.sample_rate}
+  fft_size: ${dsp.config.fft_size}
+  hop_size: ${dsp.config.hop_size}
+  n_mels: ${dsp.config.n_mels}
+  lambda_mel: 45
+  lambda_adv: 1
+  lambda_fm: 2
+  lambda_reg: 1

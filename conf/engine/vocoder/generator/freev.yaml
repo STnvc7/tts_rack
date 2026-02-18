@@ -1,0 +1,12 @@
+_target_: engine.vocoder.freev.FreeVGenerator
+sample_rate: ${dsp.config.sample_rate}
+n_mels: ${dsp.config.n_mels}
+fft_size: ${dsp.config.fft_size}
+hop_size: ${dsp.config.hop_size}
+psp_channel: 512
+psp_input_conv_kernel_size: 7
+psp_output_real_conv_kernel_size: 7
+psp_output_imag_conv_kernel_size: 7
+convnext_intermediate_dim: 1536
+asp_convnext_n_layers: 1
+psp_convnext_n_layers: 8

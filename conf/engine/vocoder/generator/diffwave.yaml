@@ -1,0 +1,10 @@
+_target_: engine.vocoder.diffwave.generator.DiffWave
+n_mels: ${dsp.config.n_mels}
+upsample_rates: [16, 16]
+residual_channels: 64
+residual_layers: 30
+dilation_cycle_length: 10
+beta_min: 1.0e-4
+beta_max: 0.05
+beta_step: 50
+inference_schedule: [0.0001, 0.001, 0.01, 0.05, 0.2, 0.5]

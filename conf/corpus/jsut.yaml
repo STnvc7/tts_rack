@@ -1,0 +1,18 @@
+name: jsut
+utterance_list_maker:
+    _target_: utterance_list_maker.JSUTUtteranceListMaker
+    corpus: ${corpus.config}
+config:
+  _target_: interface.corpus.Corpus
+  n_speakers: 1
+  n_phonemes: ${text.config.n_phonemes}
+  n_prosodies: ${text.config.n_prosodies}
+  lang: ja
+  root: ./data/jsut/basic5000
+  utterance_list_path:
+    _target_: interface.corpus.UtteranceListPath
+    train: ./data/jsut/utterance_list/train.yaml
+    valid: ./data/jsut/utterance_list/valid.yaml
+    test: ./data/jsut/utterance_list/test.yaml
+  feature_stats_path: ./data/jsut/stats/${dsp.name}.yaml
+  feature_stats: ${create_feature_stats:${corpus.config.feature_stats_path}} # load stats from feature_stats_path automatically by custom resolver

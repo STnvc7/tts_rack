@@ -1,0 +1,22 @@
+discriminator:
+  _target_: engine.vocoder.apnet.APNetDiscriminatorLoss
+  lambda_disc:
+    mpd: 1
+    mrd: 1
+  adv_loss: least_square
+generator:
+  _target_: engine.vocoder.apnet.APNetGeneratorLoss
+  sample_rate: ${dsp.config.sample_rate}
+  fft_size: ${dsp.config.fft_size}
+  hop_size: ${dsp.config.hop_size}
+  n_mels: ${dsp.config.n_mels}
+  eps: ${dsp.config.eps}
+  adv_loss: least_square
+  lambda_amp: 45
+  lambda_phase: 100
+  lambda_stft: 20
+  lambda_stft_complex: 2.25
+  lambda_mel: 45
+  lambda_disc:
+    mpd: 1
+    mrd: 1

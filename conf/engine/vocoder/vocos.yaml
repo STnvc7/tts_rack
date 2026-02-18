@@ -1,0 +1,53 @@
+defaults:
+  - _self_
+  - vocoder/generator: vocos
+  - vocoder/discriminator: vocos
+  - vocoder/loss: vocos
+  - optimizer: adam_w
+  - scheduler: exponential
+
+name: vocos
+
+data_module:
+  _target_: data.TTSDataModule
+  corpus: ${corpus.config}
+  dsp_processor: ${dsp.config}
+  text_processor: ${text.config}
+  features_to_extract: [mel_spectrogram]
+  require_duration: false
+  segment_size: ${general.segment_size}
+  trim: forward
+  normalize: loudness
+  batch_size: ${general.batch_size}
+  num_workers: 12
+  pin_memory: true
+  
+lightning_module:
+  _target_: engine.vocoder.VocoderEngine
+  generator: ${engine.vocoder.generator}
+  discriminator: ${engine.vocoder.discriminator}
+  generator_loss: ${engine.vocoder.loss.generator}
+  discriminator_loss: ${engine.vocoder.loss.discriminator}
+  optimizer: ${engine.optimizer}
+  scheduler: ${engine.scheduler}
+  dsp_processor: ${dsp.config}
+  valid_metrics:
+    _target_: metric_board.Evaluator
+    metrics:
+      spectrogram:
+        _target_: metric_board.metrics.Spectrogram
+        fft_size: ${dsp.config.fft_size}
+        hop_size: ${dsp.config.hop_size}
+        distance: mae
+      mel_spectrogram:
+        _target_: metric_board.metrics.MelSpectrogram
+        sample_rate: ${dsp.config.sample_rate}
+        fft_size: ${dsp.config.fft_size}
+        hop_size: ${dsp.config.hop_size}
+        n_mels: ${dsp.config.n_mels}
+        distance: mae
+  test_metrics: ${metrics}
+  exp_path: ${general.exp_path}
+  controls: null
+  n_valid_log_samples: 8
+  n_test_save_samples: 20

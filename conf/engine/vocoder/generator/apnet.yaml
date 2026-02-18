@@ -1,0 +1,15 @@
+_target_: engine.vocoder.apnet.APNetGenerator
+n_mels: ${dsp.config.n_mels}
+fft_size: ${dsp.config.fft_size}
+hop_size: ${dsp.config.hop_size}
+asp_channel: 512
+asp_input_conv_kernel_size: 7
+asp_resblock_kernel_sizes: [3, 7, 11]
+asp_resblock_dilation_sizes: [[1,3,5], [1,3,5], [1,3,5]]
+asp_output_conv_kernel_size: 7
+psp_channel: 512
+psp_input_conv_kernel_size: 7
+psp_resblock_kernel_sizes: [3, 7, 11]
+psp_resblock_dilation_sizes: [[1,3,5], [1,3,5], [1,3,5]]
+psp_output_real_conv_kernel_size: 7
+psp_output_imag_conv_kernel_size: 7

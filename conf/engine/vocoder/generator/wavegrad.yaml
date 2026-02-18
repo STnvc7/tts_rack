@@ -1,0 +1,10 @@
+_target_: engine.vocoder.wavegrad.WaveGrad
+n_mels: ${dsp.config.n_mels}
+upsample_rate: [4,4,4,2,2]
+upsample_channels: [[768, 512], [512, 512], [512, 256], [256, 128], [128, 128]]
+upsample_dilations: [[1, 2, 1, 2], [1, 2, 1, 2], [1, 2, 4, 8], [1, 2, 4, 8], [1, 2, 4, 8]]
+downsample_channels: [[1, 32], [32, 128], [128, 128], [128, 256], [256, 512]]
+beta_min: 1e-6
+beta_max: 0.01
+beta_step: 1000
+inference_steps: 100

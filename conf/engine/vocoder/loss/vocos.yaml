@@ -1,0 +1,17 @@
+discriminator:
+  _target_: engine.vocoder.vocos.VocosDiscriminatorLoss
+  lambda_disc:
+    mpd: 1
+    mrd: 0.1
+generator:
+  _target_: engine.vocoder.vocos.VocosGeneratorLoss
+  sample_rate: ${dsp.config.sample_rate}
+  fft_size: ${dsp.config.fft_size}
+  hop_size: ${dsp.config.hop_size}
+  n_mels: ${dsp.config.n_mels}
+  lambda_mel: 45
+  lambda_adv: 1
+  lambda_fm: 2
+  lambda_disc:
+    mpd: 1
+    mrd: 0.1

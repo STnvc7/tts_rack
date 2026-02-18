@@ -1,0 +1,10 @@
+_target_: interface.model.Discriminators
+discriminators:
+  mpd:
+    _target_: engine.vocoder.hifi_gan.MultiPeriodDiscriminator
+    period: [2,3,5,7,11]
+  mrd:
+    _target_: engine.vocoder.vocos.MultiBandDiscriminator
+    fft_sizes: [512, 1024, 2048, 4096]
+    hop_sizes: [128, 256, 512, 1024]
+    bands: [[0.0, 0.1], [0.1, 0.25], [0.25, 0.5], [0.5, 0.75], [0.75, 1.0]]
