@@ -41,6 +41,16 @@ uv run python src/calculate_stats.py engine=acoustic/fastspeech2 dsp=24k corpus=
 
 ---
 
+## 強制アライメント用のファイルのダウンロード
+- FastSpeech2など、強制アライメントによる継続長を教師データとして使用する場合は行ってください。
+- 強制アライメントにpydominoを使用しています。
+- 次のコマンドを実行して、onnxファイルをダウンロードしてください。
+```bash
+curl -L https://github.com/DwangoMediaVillage/pydomino/raw/refs/heads/main/onnx_model/phoneme_transition_model.onnx --create-dirs -o ./bin/phoneme_transition_model.onnx
+```
+
+---
+
 ## 学習
 - 用意したデータセットやモデルを切り替えながら学習が可能です。
 - general.exp_nameを指定することで、実験ディレクトリが作成され、実験データが保存されます。保存場所は設定ファイルのgeneralの値によって決定されます。　exp/[project_name]/[group_name]/[exp_name]
