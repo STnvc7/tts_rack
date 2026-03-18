@@ -1,5 +1,5 @@
-.venv
-wandb
-bin
-data
-exp
+/.venv
+/wandb
+/bin
+/data
+/exp

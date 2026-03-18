@@ -1,7 +1,6 @@
 name: ja
 config:
-  _target_: text.JapaneseTextProcessor
+  _target_: text.ja.JapaneseTextProcessor
   lang: ja
-  n_phonemes: 43
-  n_prosodies: 7
-  aligner_path: ./bin/phoneme_transition_model.onnx
+  n_phonemes: 51
+  n_prosodies: null

@@ -4,7 +4,29 @@ import torch.nn.functional as F
 from dsp_board.transforms import stft, istft
 from .oscillator import wavetable_osc, harmonic_osc, anti_alias
 
-class WavetableHead(nn.Module):
+class DDSPHead(nn.Module):
+    def __init__(self, channels, sample_rate, fft_size, hop_size, n_harmonics, n_bands):
+        super().__init__()
+        self.periodic = AdditiveOscillator(channels, n_harmonics, sample_rate, hop_size)
+        self.aperiodic = LTVFilter(channels, n_bands, fft_size, hop_size)
+    def forward(self, z, f0):
+        periodic, _ = self.periodic(z, f0)
+        aperiodic, _ = self.aperiodic(z)
+        y = periodic + aperiodic
+        return y, periodic, aperiodic
+        
+class WTNetHead(nn.Module):
+    def __init__(self, channels, sample_rate, fft_size, hop_size, n_samples, n_bands):
+        super().__init__()
+        self.periodic = WavetableOscillator(channels, n_samples, sample_rate, hop_size)
+        self.aperiodic = LTVFilter(channels, n_bands, fft_size, hop_size)
+    def forward(self, z, f0):
+        periodic, _ = self.periodic(z, f0)
+        aperiodic, _ = self.aperiodic(z)
+        y = periodic + aperiodic
+        return y, periodic, aperiodic
+
+class WavetableOscillator(nn.Module):
     def __init__(self, channels, n_samples, sample_rate, hop_size):
         super().__init__()
         self.sample_rate = sample_rate
@@ -16,14 +38,14 @@ class WavetableHead(nn.Module):
         amp = self.proj_amp(z)
         phase = self.proj_phase(z)
         
-        amp = amp.exp().clip(max=100)
+        amp = amp.clip(max=5.).exp()
         amp = anti_alias(amp, f0, self.sample_rate)
         S = amp * (phase.cos() + 1j*phase.sin())
         wt = torch.fft.irfft(S, dim=1)
         harmonic = wavetable_osc(wt, f0, self.sample_rate, self.hop_size)
         return harmonic, wt
         
-class AdditiveHead(nn.Module):
+class AdditiveOscillator(nn.Module):
     def __init__(self, channels, n_harmonics, sample_rate, hop_size):
         super().__init__()
         self.sample_rate = sample_rate
@@ -39,7 +61,7 @@ class AdditiveHead(nn.Module):
         harmonic = harmonic_osc(amp, f0, self.sample_rate)
         return harmonic, amp
         
-class LTVHead(nn.Module):
+class LTVFilter(nn.Module):
     def __init__(self, channels, n_bands, fft_size, hop_size):
         super().__init__()
         self.fft_size = fft_size

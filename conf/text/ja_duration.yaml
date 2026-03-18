@@ -1,0 +1,7 @@
+name: ja_duration
+config:
+  _target_: text.ja.DurationJapaneseTextProcessor
+  lang: ja
+  n_phonemes: 43
+  n_prosodies: 7
+  aligner_path: ./bin/phoneme_transition_model.onnx

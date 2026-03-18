@@ -12,7 +12,7 @@ data_module:
   corpus: ${corpus.config}
   dsp_processor: ${dsp.config}
   text_processor: ${text.config}
-  features_to_extract: [mel_spectrogram]
+  features_to_extract: [scaled_mel_spectrogram]
   require_duration: false
   segment_size: ${general.segment_size}
   trim: forward
@@ -47,6 +47,8 @@ lightning_module:
         distance: mae
   test_metrics: ${metrics}
   exp_path: ${general.exp_path}
-  controls: null
+  controls:
+    - n_steps: 25
+    - n_steps: 50
   n_valid_log_samples: 8
   n_test_save_samples: 20

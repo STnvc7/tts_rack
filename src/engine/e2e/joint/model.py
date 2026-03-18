@@ -88,10 +88,7 @@ class JointModel(E2EModel):
         for k in feature_keys:
             _t = threshold[k]
             if (_t is not None) and ((_t == -1) or (self.counter < _t)):
-                _f = ground_truth[k]
-                if segment_id is not None:
-                    _f = slice_segment_by_id(_f, segment_id.unsqueeze(1).expand(-1, _f.shape[1], -1), dim=-1)
-                features[k] = _f
+                features[k] = ground_truth[k]
             else:
                 if self.detach_between:
                     features[k] = acoustic_model_pred[k].detach()
@@ -102,6 +99,11 @@ class JointModel(E2EModel):
     def forward(self, batch: DataLoaderOutput) -> E2EModelOutput:
         acoustic_output = self.acoustic_model(batch)
         features = self._build_features(acoustic_output.pred_features, batch.features, batch.segment_id_feats)
+        if batch.segment_id_feats is not None:
+            for k, v in features.items():
+                B, C, _ = v.shape
+                _id = batch.segment_id_feats.unsqueeze(1).expand(B, C, -1)
+                features[k] = slice_segment_by_id(v, _id, dim=-1)
         generator_output = self.generator(features, batch.wav)
 
         # -----------------------------------------

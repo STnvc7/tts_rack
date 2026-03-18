@@ -40,10 +40,9 @@ def duration_to_attention(durations: torch.Tensor) -> torch.Tensor:
     dur = durations.squeeze(1) 
     ends = torch.cumsum(dur, dim=1)
     starts = ends - dur
-
     T = ends[:, -1].max().long().item()
     device = durations.device
-    t_range = torch.arange(T, device=device).view(1, 1, T)
+    t_range = torch.arange(T, device=device).view(1, 1, T) #type: ignore
     attention = (t_range >= starts.unsqueeze(2)) & (t_range < ends.unsqueeze(2))
     return attention.to(durations.dtype)
     

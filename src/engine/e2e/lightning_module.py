@@ -78,6 +78,7 @@ class E2EEngine(L.LightningModule):
     # TRAINING
     # :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     def training_step(self, batch: Optional[DataLoaderOutput], batch_idx):
+        # when dataloader failed
         if batch is None:
             return
             
@@ -151,16 +152,17 @@ class E2EEngine(L.LightningModule):
         if batch is None:
             return
         
-        target = batch.wav  # (batch, 1, time)
         if batch.segment_id_wav is not None:
-            target = slice_segment_by_id(batch.wav, batch.segment_id_wav.unsqueeze(1), dim=-1)
-            batch.wav = target
+            batch.wav = slice_segment_by_id(batch.wav, batch.segment_id_wav.unsqueeze(1), dim=-1)
         
         # forward process -----------------------
         model_output: E2EModelOutput = self.model(batch)
         
+        target = batch.wav.squeeze(1)
+        pred = fix_length(model_output.pred.squeeze(1), target.shape[-1], dim=-1)
+        
         # compute validation loss -----------
-        self.valid_metrics.update(model_output.pred.squeeze(), target.squeeze())
+        self.valid_metrics.update(pred, target)
 
         if model_output.pred_features is not None:
             # initialize metrics at first validation step
@@ -169,11 +171,10 @@ class E2EEngine(L.LightningModule):
                 self.valid_metrics_features = {key: MSEMetric(dim=1) for key in keys}
             
             # update metrics
-            for key, pred in model_output.pred_features.items():
-                _gt = batch.features[key]
-                if batch.segment_id_feats is not None:
-                    _gt = slice_segment_by_id(_gt, batch.segment_id_feats.unsqueeze(1), dim=-1)
-                self.valid_metrics_features[key].update(pred, _gt)
+            for _key, _pred in model_output.pred_features.items():
+                _gt = batch.features[_key]
+                _pred = fix_length(_pred, _gt.shape[-1], dim=-1)
+                self.valid_metrics_features[_key].update(_pred, _gt)
 
         # add samples to table --------------
         if (self.n_valid_log_samples is None) or (batch_idx < self.n_valid_log_samples):
@@ -261,7 +262,6 @@ class E2EEngine(L.LightningModule):
             loggable_values = [
                 v.to_wandb_media() for v in model_output.loggable_outputs.values()
             ]
-
             if self.valid_loggable_table is None:
                 self.valid_loggable_table = wandb.Table(columns=loggable_keys)
             self.valid_loggable_table.add_data(*loggable_values)

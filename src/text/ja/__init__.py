@@ -1,2 +1,2 @@
-from .basic.processor import JapaneseTextProcessor
-from .mas.processor import JapaneseTextProcessorForMAS
+from .duration.processor import DurationJapaneseTextProcessor
+from .mas.processor import JapaneseTextProcessor

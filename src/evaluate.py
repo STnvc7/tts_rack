@@ -42,7 +42,6 @@ def evaluate(args):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--exp", required=True, help="Path to the experiment directory (must contain hparams.yaml and checkpoints/).")
-    parser.add_argument("--config", type=str, default="config", help="Optional config overrides.")
     parser.add_argument("--metrics", type=str, default=None, help="Name of the metrics set under conf/metrics/.")
     parser.add_argument("--device", default="cuda", choices=["cpu", "cuda"], help="Device to use for evaluation (cpu or gpu).")
     parser.add_argument("--n-save-samples", default=20)

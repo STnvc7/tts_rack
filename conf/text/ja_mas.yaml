@@ -1,6 +1,0 @@
-name: ja_mas
-config:
-  _target_: text.JapaneseTextProcessorForMAS
-  lang: ja
-  n_phonemes: 51
-  n_prosodies: null

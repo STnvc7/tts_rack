@@ -12,7 +12,7 @@ data_module:
   corpus: ${corpus.config}
   dsp_processor: ${dsp.config}
   text_processor: ${text.config}
-  features_to_extract: [mel_spectrogram]
+  features_to_extract: [scaled_mel_spectrogram]
   require_duration: false
   segment_size: ${general.segment_size}
   trim: forward

@@ -18,4 +18,5 @@ AcousticFeature = Literal[
     "band_aperiodicity",
     "vuv",
     "continuous_pitch"
+    "scaled_mel_spectrogram"
 ]

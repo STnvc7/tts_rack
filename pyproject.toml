@@ -9,6 +9,7 @@ dependencies = [
     "dsp-board",
     "einops>=0.8.1",
     "fastdtw>=0.3.4",
+    "forcealign>=1.1.9",
     "hydra-core>=1.3.2",
     "jaconv>=0.4.0",
     "lightning>=2.5.1",

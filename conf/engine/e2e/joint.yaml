@@ -12,9 +12,9 @@ name: joint training
 
 data_module:
   _target_: data.TTSDataModule
-  corpus: ${corpus}
-  dsp_processor: ${dsp}
-  text_processor: ${text}
+  corpus: ${corpus.config}
+  dsp_processor: ${dsp.config}
+  text_processor: ${text.config}
   features_to_extract: [mel_spectrogram, pitch, mel_energy]
   require_duration: true
   segment_size: ${general.segment_size} 
@@ -32,7 +32,6 @@ lightning_module:
     generator: ${engine.vocoder.generator}
     teacher_forcing_until:
       mel_spectrogram: null
-      pitch: -1
     freeze_acoustic_model: false
     detach_between: true
     pretrained_acoustic_model_path: null
@@ -45,25 +44,25 @@ lightning_module:
   discriminator_loss: ${engine.vocoder.loss.discriminator}
   optimizer: ${engine.optimizer}
   scheduler: ${engine.scheduler}
-  dsp_processor: ${dsp}
+  dsp_processor: ${dsp.config}
   valid_metrics:
     _target_: metric_board.Evaluator
     metrics:
       spectrogram:
         _target_: metric_board.metrics.Spectrogram
-        fft_size: ${dsp.fft_size}
-        hop_size: ${dsp.hop_size}
+        fft_size: ${dsp.config.fft_size}
+        hop_size: ${dsp.config.hop_size}
         distance: mae
       mel_spectrogram:
         _target_: metric_board.metrics.MelSpectrogram
-        sample_rate: ${dsp.sample_rate}
-        fft_size: ${dsp.fft_size}
-        hop_size: ${dsp.hop_size}
-        n_mels: ${dsp.n_mels}
+        sample_rate: ${dsp.config.sample_rate}
+        fft_size: ${dsp.config.fft_size}
+        hop_size: ${dsp.config.hop_size}
+        n_mels: ${dsp.config.n_mels}
         distance: mae
   test_metrics: ${metrics}
   exp_path: ${general.exp_path}
-  controlls:
+  controls:
     - pitch_mean_alpha: 0.75
     - pitch_mean_alpha: 1.5
     - pitch_std_alpha: 0.5

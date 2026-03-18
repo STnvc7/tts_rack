@@ -1,2 +1,2 @@
 from .loss import WaveGradLoss
-from .model.model import WaveGrad
+from .model import WaveGrad

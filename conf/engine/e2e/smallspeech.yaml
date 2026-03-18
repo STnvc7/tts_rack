@@ -1,10 +1,9 @@
 defaults:
   - _self_
-  - vocoder/discriminator: univnet
   - optimizer: adam_w
   - scheduler: exponential
 
-name: ddspeech
+name: smallspeech
 
 data_module:
   _target_: data.TTSDataModule
@@ -23,38 +22,53 @@ data_module:
 lightning_module:
   _target_: engine.e2e.E2EEngine
   model:
-    _target_: engine.e2e.ddspeech.DDSpeech
+    _target_: engine.e2e.smallspeech.SmallSpeech
     n_phonemes: ${text.config.n_phonemes}
     sample_rate: ${dsp.config.sample_rate}
     fft_size: ${dsp.config.fft_size}
     hop_size: ${dsp.config.hop_size}
     n_mels: ${dsp.config.n_mels}
-    n_harmonics: 64
     n_samples: 256
     n_bands: 128
-    n_timesteps: 4
-    channels: 64
-    h_channels: 128
-    transformer_kernel_size: 1
-    transformer_n_layers: 6
-    transformer_n_groups: 1
-    transformer_n_heads: 4
-    transformer_p_dropout: 0.1
-    convnext_kernel_size: 7
-    convnext_n_layers: 8
-    convnext_n_groups: 2
-    periodic_head: wavetable
-    aperiodic_head: ltv
-    mel_stats: ${corpus.config.feature_stats.mel_spectrogram}
-    pitch_stats: ${corpus.config.feature_stats.pitch}
-  discriminator: ${engine.vocoder.discriminator}
+    channels: 128
+    h_channels: 256
+    kernel_size: 7
+    n_layers: 8
+    n_groups: 1
+    weight_film: false
+    act: tangma
+  discriminator:
+    _target_: interface.model.Discriminators
+    discriminators:
+      mpd:
+        _target_: engine.vocoder.hifi_gan.MultiPeriodDiscriminator
+        period: [2,3,5,7,11]
+      mrd:
+        _target_: engine.vocoder.univnet.MultiResolutionDiscriminator
+        fft_sizes: [512, 1024, 2048, 4096]
+        hop_sizes: [128, 256, 512, 1024]
+        window_sizes: [512, 1024, 2048, 4096]
+      f0:
+        _target_: engine.e2e.smallspeech.F0Discriminator
+        c_channels: ${engine.lightning_module.model.channels}
+        kernel_sizes: [3, 5, 7, 7]
+        dilations: [1, 2, 2, 4]
+        conditional: true
+      duration:
+        _target_: engine.e2e.smallspeech.DurationDiscriminator
+        c_channels: ${engine.lightning_module.model.channels}
+        kernel_sizes: [3, 5]
+        dilations: [1, 1]
+        conditional: true
   loss:
-    _target_: engine.e2e.ddspeech.DDSpeechLoss
+    _target_: engine.e2e.smallspeech.SmallSpeechLoss
     sample_rate: ${dsp.config.sample_rate}
     fft_size: ${dsp.config.fft_size}
     hop_size: ${dsp.config.hop_size}
     n_mels: ${dsp.config.n_mels}
     lambda_mel: 45
+    lambda_mu: 10
+    lambda_prior: 10
   discriminator_loss:
     _target_: engine.vocoder.hifi_gan.HiFiGANDiscriminatorLoss
   optimizer: ${engine.optimizer}

@@ -1,4 +1,4 @@
-_target_: engine.vocoder.diffwave.generator.DiffWave
+_target_: engine.vocoder.diffwave.DiffWave
 n_mels: ${dsp.config.n_mels}
 upsample_rates: [16, 16]
 residual_channels: 64

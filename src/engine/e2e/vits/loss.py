@@ -54,7 +54,7 @@ class VITSLoss(E2EModelLoss):
             e2e_output.outputs["logs_p"], 
             batch.feature_mask.unsqueeze(1),
         ) * self.lambda_kl
-        
+
         duration_loss = e2e_output.outputs["duration_loss"] * self.lambda_dur
         
         target = batch.wav.squeeze(1)
@@ -72,7 +72,6 @@ class VITSLoss(E2EModelLoss):
             fm_loss += feature_matching_loss(out.fmap_target, out.fmap_pred) * self.lambda_fm
         
         total_loss = reconstruct_loss + adv_loss + fm_loss + kl_loss + duration_loss
-        
         output = LossOutput(
             total_loss=total_loss, 
             loss_components={

@@ -5,8 +5,16 @@ from dsp_board.processor import Processor
 class DSPProcessor(Processor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-    
+
     # Define your custom methods!
+    def scaled_mel_spectrogram(self, x):
+        mel = self.mel_spectrogram(x) # log melspectrogram
+        mel = mel.exp()
+        mel = 20 * torch.log10(mel.clip(min=1e-5)) - 20
+        mel = (mel + 100) / 100
+        mel = mel.clip(min=0, max=1)
+        return mel
+    
     def continuous_pitch(self, x) -> torch.Tensor:
         f0 = self.pitch(x).squeeze(0)
         cf0 = f0.clone()

@@ -6,7 +6,6 @@ import torch.nn as nn
 from interface.loss import AcousticModelLoss, LossOutput
 from interface.data import DataLoaderOutput
 from interface.model import AcousticModelOutput
-from utils.tensor import slice_segment_by_id
 
 class FastSpeech2Loss(AcousticModelLoss):
     """ FastSpeech2 Loss """
@@ -20,12 +19,6 @@ class FastSpeech2Loss(AcousticModelLoss):
         src_masks = batch.phoneme_id_mask
         mel_masks = batch.feature_mask
         mel_target = batch.features["mel_spectrogram"].permute(0,2,1)
-        segment_id = batch.segment_id_feats
-        if segment_id is not None:
-            mel_masks = slice_segment_by_id(mel_masks, segment_id, dim=-1)
-            mel_target = slice_segment_by_id(
-                mel_target, segment_id.unsqueeze(-1).expand(-1,-1,mel_target.shape[-1]), dim=1
-            )
         
         assert acoustic_output.outputs is not None
         
@@ -45,6 +38,7 @@ class FastSpeech2Loss(AcousticModelLoss):
         energy_target = acoustic_output.outputs["energy_raw_norm"]
         energy_target = energy_target.masked_select(mel_masks)
 
+        assert batch.duration is not None
         log_duration_pred = acoustic_output.outputs["log_duration_pred"]
         log_duration_pred = log_duration_pred.masked_select(src_masks)
         log_duration_target = torch.log(batch.duration.float() + 1)

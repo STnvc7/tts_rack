@@ -39,6 +39,9 @@ class TextEncoder(nn.Module):
             p_dropout
         )
         self.proj= nn.Conv1d(hidden_channels, out_channels * 2, 1)
+        # self.proj.weight.data.zero_() # for training stability
+        # if self.proj.bias is not None:
+        #     self.proj.bias.data.zero_()
     
     def forward(self, x, x_mask):
         x = self.emb(x)
@@ -48,7 +51,7 @@ class TextEncoder(nn.Module):
         stats = self.proj(x) * x_mask
     
         m, logs = torch.split(stats, self.out_channels, dim=1)
-        return x, m, logs, x_mask
+        return x, m, logs
 
 
 class PosteriorEncoder(nn.Module):
@@ -73,12 +76,15 @@ class PosteriorEncoder(nn.Module):
         self.pre = nn.Conv1d(in_channels, hidden_channels, 1)
         self.enc = WN(hidden_channels, kernel_size, dilation_rate, n_layers, gin_channels=gin_channels)
         self.proj = nn.Conv1d(hidden_channels, out_channels * 2, 1)
-    
+        # self.proj.weight.data.zero_() # for training stability
+        # if self.proj.bias is not None:
+        #     self.proj.bias.data.zero_()
+        
     def forward(self, x, x_mask, g=None):
         x = self.pre(x) * x_mask
         x = self.enc(x, x_mask, g=g)
         stats = self.proj(x) * x_mask
         m, logs = torch.split(stats, self.out_channels, dim=1)
         z = (m + torch.randn_like(m) * torch.exp(logs)) * x_mask
-        return z, m, logs, x_mask
+        return z, m, logs
     

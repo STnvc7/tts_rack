@@ -7,8 +7,9 @@ from interface.text import TextProcessor, AlignedPhoneme, AvailableLanguage
 from ..g2p import G2P
 from .symbols import PHONEME_MAP_JP
 
-class JapaneseTextProcessorForMAS(TextProcessor):
+class JapaneseTextProcessor(TextProcessor):
     def __init__(self, lang: AvailableLanguage, n_phonemes: int, n_prosodies: int):
+        assert lang == "ja"
         self.lang: AvailableLanguage = lang
         self.n_phonemes = n_phonemes
         self.n_prosodies = n_prosodies

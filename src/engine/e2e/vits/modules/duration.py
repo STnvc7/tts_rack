@@ -69,6 +69,10 @@ class StochasticDurationPredictor(nn.Module):
 
         self.pre = nn.Conv1d(in_channels, filter_channels, 1)
         self.proj = nn.Conv1d(filter_channels, filter_channels, 1)
+        # self.proj.weight.data.zero_() # for training stability
+        # if self.proj.bias is not None:
+        #     self.proj.bias.data.zero_()
+        
         self.convs = DDSConv(filter_channels, kernel_size, n_layers=3, p_dropout=p_dropout)
         if gin_channels != 0:
             self.cond = nn.Conv1d(gin_channels, filter_channels, 1)

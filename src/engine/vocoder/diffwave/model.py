@@ -8,48 +8,42 @@ from interface.model import GeneratorOutput, Generator
 from interface.feature import AcousticFeature
 from utils.tensor import fix_length
 from .diffusion import Diffusion
-from .module import WaveGradGenerator
+from .module import DiffWaveGenerator
 
-class WaveGrad(Generator):
+class DiffWave(Generator):
     def __init__(
         self,
         n_mels,
-        upsample_rate=[4,4,4,2,2],
-        upsample_channels=[(768, 512), (512, 512), (512, 256), (256, 128), (128, 128)],
-        upsample_dilations=[[1, 2, 1, 2], [1, 2, 1, 2], [1, 2, 4, 8], [1, 2, 4, 8], [1, 2, 4, 8]],
-        downsample_channels=[(1, 32), (32, 128), (128, 128), (128, 256), (256, 512)],
-        beta_min=1e-6,
-        beta_max=0.01,
-        beta_step=1000,
-        inference_steps=25,
+        upsample_rates,
+        residual_channels,
+        residual_layers,
+        dilation_cycle_length,
+        beta_min,
+        beta_max,
+        beta_step,
+        inference_schedule,
     ):
         super().__init__()
-        self.upsample_rate = upsample_rate
+        self.upsample_rates = upsample_rates
         self.beta_min = beta_min
         self.beta_max = beta_max
-        self.inference_steps = inference_steps
-        model = WaveGradGenerator(
+        self.inference_schedule = torch.tensor(inference_schedule)
+        model = DiffWaveGenerator(
             n_mels=n_mels,
-            upsample_rate=upsample_rate,
-            upsample_channels=upsample_channels,
-            upsample_dilations=upsample_dilations,
-            downsample_channels=downsample_channels,
+            upsample_rates=upsample_rates,
+            residual_channels=residual_channels,
+            residual_layers=residual_layers,
+            dilation_cycle_length=dilation_cycle_length,
+            n_steps=beta_step,
         )
         self.diffusion = Diffusion(
             model=model,
-            upsample_rate=math.prod(upsample_rate),
+            upsample_rate=math.prod(upsample_rates),
             beta_min=beta_min,
             beta_max=beta_max,
             beta_step=beta_step,
         )
         
-    def scale_melspectrogram(self, mel):
-        mel = mel.exp()
-        mel = 20 * torch.log10(mel.clip(min=1e-5)) - 20
-        mel = (mel + 100) / 100
-        mel = mel.clip(min=0, max=1)
-        return mel
-    
     def forward(
         self, 
         input_feature: Dict[AcousticFeature, torch.Tensor],
@@ -59,10 +53,9 @@ class WaveGrad(Generator):
             return self.inference(input_feature)
         
         assert wav is not None
-        mel = input_feature["mel_spectrogram"]
-        mel = self.scale_melspectrogram(mel)
+        mel = input_feature["scaled_mel_spectrogram"]
         
-        upsample_rate = math.prod(self.upsample_rate)
+        upsample_rate = math.prod(self.upsample_rates)
         if wav.shape[-1] % upsample_rate != 0:
             mod = wav.shape[-1] % upsample_rate
             length = wav.shape[-1] + upsample_rate - mod
@@ -78,11 +71,14 @@ class WaveGrad(Generator):
         input_feature: Dict[AcousticFeature, torch.Tensor],
         control: Optional[Any]=None
     ) -> GeneratorOutput:
-        mel = input_feature["mel_spectrogram"]
-        mel = self.scale_melspectrogram(mel)
+        mel = input_feature["scaled_mel_spectrogram"]
         
-        schedule = torch.linspace(self.beta_min, self.beta_max, 100)
-        schedule = schedule.to(mel.device)
+        if control is not None and control.get("n_steps", None) is not None:
+            n_steps = control.get("n_steps")
+            schedule = torch.linspace(self.beta_min, self.beta_max, n_steps)
+        else:
+            schedule = self.inference_schedule.to(mel.device)
+            
         pred = self.diffusion(mel, schedule)
         return GeneratorOutput(pred=pred)
         

@@ -5,7 +5,8 @@
 
 from typing import Dict, Optional
 import torch
-from torch import Tensor, nn
+from torch import nn
+from dsp_board.transforms import stft, istft
 
 from interface.feature import AcousticFeature
 from interface.model import GeneratorOutput, Generator
@@ -112,7 +113,9 @@ class WavehaxGenerator(Generator):
         # Generate prior waveform and compute spectrogram
         with torch.no_grad():
             prior = self.prior_generator(f0)
-            real, imag = self.stft(prior)
+            # real, imag = self.stft(prior)
+            prior_spc = stft(prior.squeeze(1), self.n_fft, self.hop_length)
+            real, imag = prior_spc.real, prior_spc.imag
             if self.use_logmag_phase:
                 prior1, prior2 = to_log_magnitude_and_phase(real, imag)
             else:
@@ -141,7 +144,9 @@ class WavehaxGenerator(Generator):
             real, imag = to_real_imaginary(x[:, 0], x[:, 1])
         else:
             real, imag = x[:, 0], x[:, 1]
-        x = self.stft.inverse(real, imag)
+        # x = self.stft.inverse(real, imag)
+        x = istft(torch.complex(real, imag), self.n_fft, self.hop_length).unsqueeze(1)
+
         
         return GeneratorOutput(
             pred=x,    

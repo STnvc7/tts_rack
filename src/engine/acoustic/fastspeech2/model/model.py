@@ -11,7 +11,7 @@ from interface.loggable import Duration, Heatmap
 
 from .transformer import Decoder, Encoder, PostNet
 from .variance_adaptor import LengthRegulator, VariancePredictor
-from engine._common.tensor import normalize, denormalize, slice_segment_by_id
+from engine._common.tensor import normalize, denormalize
 
 class FastSpeech2(AcousticModel):
     pitch_bins: torch.Tensor
@@ -120,12 +120,6 @@ class FastSpeech2(AcousticModel):
         pitch = batch.features["pitch"].squeeze(1)
         energy = batch.features["mel_energy"].squeeze(1)
         feature_mask = batch.feature_mask
-        if batch.segment_id_feats is not None:
-            id = batch.segment_id_feats
-            output = slice_segment_by_id(output, id.unsqueeze(-1).expand(-1, -1, output.shape[-1]),dim=1)
-            pitch = slice_segment_by_id(pitch, id, dim=1)
-            energy = slice_segment_by_id(energy, id, dim=1)
-            feature_mask = slice_segment_by_id(feature_mask, id, dim=1)
             
         # pitch prediction ----------------------
         pitch_pred_norm = self.pitch_predictor(output, ~feature_mask)
@@ -197,11 +191,6 @@ class FastSpeech2(AcousticModel):
         duration_pred = torch.clamp(torch.round(torch.exp(log_duration_pred) - 1), min=0).int()
         output, feature_mask = self.length_regulator(output, duration_pred, max_length=None)
 
-        if batch.segment_id_feats is not None:
-            id = batch.segment_id_feats
-            output = slice_segment_by_id(output, id.unsqueeze(-1).expand(-1, -1, output.shape[-1]),dim=1)
-            feature_mask = slice_segment_by_id(feature_mask, id, dim=1)
-        
         # pitch prediction ----------------------
         pitch_pred = self.pitch_predictor(output, ~feature_mask)
         pitch_pred = denormalize(pitch_pred, self.pitch_mean * pitch_mean_alpha, self.pitch_std * pitch_std_alpha)

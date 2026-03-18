@@ -1,3 +1,6 @@
+# This model requires larger batch size than default settting!
+# example) general.batch_size=16 general.segment_size.train=8192
+
 defaults:
   - _self_
   - vocoder/discriminator: hifi_gan
@@ -25,6 +28,7 @@ lightning_module:
   model:
     _target_: engine.e2e.vits.VITS
     n_vocab: ${text.config.n_phonemes}
+    sample_rate: ${dsp.config.sample_rate}
     fft_size: ${dsp.config.fft_size}
     inter_channels: 192
     hidden_channels: 192

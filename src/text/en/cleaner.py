@@ -5,13 +5,11 @@ from dsp_board.preprocesses import resample
 import pydomino
 
 from interface.text import TextProcessor, AlignedPhoneme, AvailableLanguage
-from ..g2p import G2P
-from .symbols import PHONEME_JP, PHONEME_MAP_JP, PROSODY_MAP_JP
-from ..cleaner import japanese_text_cleaner
 
-class JapaneseTextProcessor(TextProcessor):
+class EnglishTextProcessor(TextProcessor):
     def __init__(self, lang: AvailableLanguage, n_phonemes: int, n_prosodies: int, aligner_path: str):
         self.aligner = pydomino.Aligner(aligner_path)
+        assert lang == "en"
         self.lang: AvailableLanguage = lang
         self.n_phonemes = n_phonemes
         self.n_prosodies = n_prosodies
