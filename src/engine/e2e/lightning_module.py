@@ -302,7 +302,11 @@ class E2EEngine(L.LightningModule):
 
         target = target.squeeze()
         pred = model_output.pred.squeeze()
-        pred = fix_length(pred, target.shape[-1])
+        
+        if target.shape[-1] > pred.shape[-1]:
+            pred = fix_length(pred, target.shape[-1])
+        else:
+            target = fix_length(target, pred.shape[-1])
 
         if self.test_metrics:
             self.test_metrics.update(pred, target)

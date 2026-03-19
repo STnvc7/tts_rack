@@ -45,6 +45,7 @@ if __name__ == "__main__":
     parser.add_argument("--metrics", type=str, default=None, help="Name of the metrics set under conf/metrics/.")
     parser.add_argument("--device", default="cuda", choices=["cpu", "cuda"], help="Device to use for evaluation (cpu or gpu).")
     parser.add_argument("--n-save-samples", default=20)
+    parser.add_argument("--config", type=str, default="config", help="Optional config overrides.")
     args = parser.parse_args()
 
     evaluate(args)
