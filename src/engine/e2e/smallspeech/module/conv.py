@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .norm import AdaptiveNorm1d
+from .norm import LayerNorm
 from .act import Activation
 
 class ConvNeXtBlock(nn.Module):
@@ -14,7 +14,8 @@ class ConvNeXtBlock(nn.Module):
         kernel_size,
         n_layers,
         n_groups=1,
-        act="gelu"
+        adaptive_norm=True,
+        act="tangma"
     ):
         super().__init__()
         self.n_layers = n_layers
@@ -24,6 +25,7 @@ class ConvNeXtBlock(nn.Module):
                 h_channels=h_channels, 
                 kernel_size=kernel_size, 
                 n_groups=n_groups,
+                adaptive_norm=adaptive_norm,
                 act=act,
             )
             for _ in range(n_layers)
@@ -52,10 +54,11 @@ class ConvNeXtLayer(nn.Module):
         h_channels, 
         kernel_size,
         n_groups,
+        adaptive_norm,
         act,
     ):
         super().__init__()
-        self.norm = AdaptiveNorm1d(channels)
+        self.norm = LayerNorm(channels, adaptive=adaptive_norm)
         self.dw_conv = nn.Conv1d(channels, channels, kernel_size=kernel_size, padding=(kernel_size-1)//2, groups=channels)
         self.pw_conv1 = nn.Conv1d(channels, h_channels, 1, groups=n_groups)
         self.shuffle = Shuffle1d(n_groups)

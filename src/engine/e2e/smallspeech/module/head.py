@@ -71,7 +71,7 @@ class LTVFilter(nn.Module):
         
     def forward(self, z):
         amp = self.proj_amp(z)
-        amp = amp.exp().clip(max=100)
+        amp = amp.clip(max=5.).exp()
         amp = self.upsample(amp.transpose(1, 2)).transpose(1, 2)
         H = torch.complex(amp, torch.zeros_like(amp))
         

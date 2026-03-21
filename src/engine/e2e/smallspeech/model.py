@@ -11,7 +11,6 @@ from interface.model import E2EModel, E2EModelOutput
 from interface.loggable import Audio, Heatmap, Spectrogram
 
 from engine._common.tensor import slice_segment_by_id, duration_to_attention, create_mask_from_lengths
-from .module.conv_wfilm import WeightFiLMConvNeXtBlock
 from .module.conv import ConvNeXtBlock
 from .module.task import TaskEmbedding
 from .module.head import WTNetHead
@@ -31,7 +30,7 @@ class SmallSpeech(E2EModel):
         kernel_size,
         n_layers,
         n_groups,
-        weight_film,
+        adaptive_norm,
         act,
     ):
         super().__init__()
@@ -46,23 +45,20 @@ class SmallSpeech(E2EModel):
         self.prior_head = WTNetHead(channels, sample_rate, fft_size, hop_size, n_samples, n_bands)
         self.head = WTNetHead(channels, sample_rate, fft_size, hop_size, n_samples, n_bands)
         self.task_emb = nn.ModuleDict({
-            "text":  TaskEmbedding(channels, h_channels, kernel_size, n_groups),
-            "duration": TaskEmbedding(channels, h_channels, kernel_size, n_groups),
-            "feature": TaskEmbedding(channels, h_channels, kernel_size, n_groups),
-            "f0": TaskEmbedding(channels, h_channels, kernel_size, n_groups),
-            "decoder": TaskEmbedding(channels, h_channels, kernel_size, n_groups),
+            "text":  TaskEmbedding(channels, h_channels),
+            "duration": TaskEmbedding(channels, h_channels),
+            "feature": TaskEmbedding(channels, h_channels),
+            "f0": TaskEmbedding(channels, h_channels),
+            "decoder": TaskEmbedding(channels, h_channels),
         })
         
-        if weight_film:
-            Block = WeightFiLMConvNeXtBlock
-        else:
-            Block = ConvNeXtBlock
-        self.block = Block(
+        self.block = ConvNeXtBlock(
             channels=channels,
             h_channels=h_channels,
             kernel_size=kernel_size,
             n_layers=n_layers,
             n_groups=n_groups,
+            adaptive_norm=adaptive_norm,
             act=act,
         )
 
@@ -91,7 +87,7 @@ class SmallSpeech(E2EModel):
             
         # duration prediction ---------------------------
         z_dur = self.block(z_text, x_mask, self.task_emb["duration"])
-        dur_pred = self.duration_proj(z_dur).clip(max=6.)
+        dur_pred = self.duration_proj(z_dur)
         dur_target = attn.sum(dim=-1).log1p().unsqueeze(1)
         dur_loss = F.mse_loss(dur_target.masked_select(x_mask), dur_pred.masked_select(x_mask))
         
