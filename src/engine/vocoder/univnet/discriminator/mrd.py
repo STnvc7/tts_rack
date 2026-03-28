@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 from torch.nn.utils.parametrizations import weight_norm
 from torch.nn.utils import spectral_norm
-from dsp_board.features import spectrogram
+from dsp_board.features import log_spectrogram
 
 from interface.model import Discriminator, GeneratorOutput, DiscriminatorOutput, E2EModelOutput
 
@@ -24,12 +24,11 @@ class SpecDiscriminator(nn.Module):
         self.fft_size = fft_size
         self.shift_size = shift_size
         self.win_length = win_length
-        self.spc_fn = lambda x: spectrogram(
+        self.spc_fn = lambda x: log_spectrogram(
             x, 
             fft_size=self.fft_size, 
             hop_size=self.shift_size, 
             window_size=self.win_length, 
-            log=True,
         )
         self.discriminators = nn.ModuleList([
             norm_f(nn.Conv2d(1, 32, kernel_size=(3, 9), padding=(1, 4))),

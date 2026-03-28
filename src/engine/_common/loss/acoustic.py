@@ -2,7 +2,7 @@ from typing import List, Tuple
 import torch
 import torch.nn.functional as F
 import math
-from dsp_board.features import spectrogram, mel_spectrogram
+from dsp_board.features import log_spectrogram, mel_spectrogram
 
 def spectrogram_l1_loss(
     target: torch.Tensor, 
@@ -11,7 +11,7 @@ def spectrogram_l1_loss(
     hop_size: int=256
 ) -> torch.Tensor:
     
-    fn = lambda x: spectrogram(x, fft_size, hop_size, log=True)
+    fn = lambda x: log_spectrogram(x, fft_size, hop_size)
     target = fn(target)
     pred = fn(pred)
     loss = F.l1_loss(target, pred)

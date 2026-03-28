@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional, Literal, List, Callable
 import wandb
-from dsp_board.features import spectrogram
+from dsp_board.features import log_spectrogram
 
 import torch
 import numpy as np
@@ -92,13 +92,13 @@ class Spectrogram(Loggable):
     def to_wandb_media(self):
         wav = self.data.squeeze()
         assert wav.ndim==1, "Spectrogram data must be 1-dim wav tensor"
-        spc = spectrogram(wav, self.fft_size, self.hop_size, log=True)
+        spc = log_spectrogram(wav, self.fft_size, self.hop_size)
         return wandb.Image(plot.imshow(spc, title=self.label, origin="lower"))
     
     def save(self, path: str):
         wav = self.data.squeeze()
         assert wav.ndim==1, "Spectrogram data must be 1-dim wav tensor"
-        spc = spectrogram(wav, self.fft_size, self.hop_size, log=True)
+        spc = log_spectrogram(wav, self.fft_size, self.hop_size)
         fig = plot.imshow(spc, title=self.label, origin="lower")
         fig.savefig(fname=path)
 
