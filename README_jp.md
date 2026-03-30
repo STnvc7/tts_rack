@@ -1,18 +1,18 @@
 # tts_rack
 
-## Overview
-A framework for research on acoustic models, E2E models, and neural vocoders.
-By using a unified training loop (**LightningModule**) across all models, it is easier to maintain consistent experimental conditions and isolate the impact of different model architectures.
+## 概要
+音響モデル、E2Eモデル、ニューラルボコーダの研究のためのフレームワークです。
+各モデルにおいて共通の学習ループ(LightningModule)を使用するため、モデル構造以外の条件を揃えやすくなっています。
 
-## Usage
-- **docs/en/train.md**: How to train models
-- **docs/en/evaluate.md**: How to evaluate models
-- **docs/en/develop.md**: How to design and add new models
+## 使用方法
+- docs/ja/train.md: モデルの学習方法
+- docs/ja/evaluate.md: モデルの評価方法
+- docs/ja/develop.md: モデルの設計・追加方法
 
-## References
-This framework is based on the following repositories and papers:
+## 参考文献
+以下のリポジトリおよび論文を参考にしています。
 
-| | Model | Repository | Paper |
+| | モデル | リポジトリ | 論文 |
 |---|---|---|---|
 | **Acoustic Models** | FastSpeech2 | [GitHub](https://github.com/ming024/FastSpeech2.git) | [arXiv](https://arxiv.org/abs/2006.04558v1) |
 | **E2E Models** | VITS | [GitHub](https://github.com/jaywalnut310/vits.git) | [arXiv](https://arxiv.org/abs/2106.06103) |
