@@ -13,7 +13,7 @@ from interface.loggable import Audio, Heatmap, Spectrogram
 from engine._common.tensor import slice_segment_by_id, duration_to_attention, create_mask_from_lengths
 from .module.conv import ConvNeXtBlock
 from .module.task import TaskEmbedding
-from .module.head import WTNetHead
+from .module.head import WTNetHead, DDSPHead
 
 class SmallSpeech(E2EModel):
     def __init__(
@@ -30,8 +30,9 @@ class SmallSpeech(E2EModel):
         kernel_size,
         n_layers,
         n_groups,
-        adaptive_norm,
-        act,
+        adaptive_norm=True,
+        act="tangma",
+        head="wtnet"
     ):
         super().__init__()
         self.sample_rate = sample_rate
@@ -42,8 +43,16 @@ class SmallSpeech(E2EModel):
         self.f0_proj = nn.Conv1d(channels, 1, 1)
         self.mel_fn = lambda x: mel_spectrogram(x, sample_rate, fft_size, hop_size, n_mels)
         self.mel_emb = nn.Conv1d(n_mels, channels, 1)
-        self.prior_head = WTNetHead(channels, sample_rate, fft_size, hop_size, n_samples, n_bands)
-        self.head = WTNetHead(channels, sample_rate, fft_size, hop_size, n_samples, n_bands)
+        
+        if head == "wtnet":
+            Head = WTNetHead
+        elif head == "ddsp":
+            Head = DDSPHead
+        else:
+            raise ValueError(f"Unsupported head type: {head}")
+        self.pre_head = Head(channels, sample_rate, fft_size, hop_size, n_samples, n_bands)
+        self.head = Head(channels, sample_rate, fft_size, hop_size, n_samples, n_bands)
+        
         self.task_emb = nn.ModuleDict({
             "text":  TaskEmbedding(channels, h_channels),
             "duration": TaskEmbedding(channels, h_channels),
@@ -116,11 +125,11 @@ class SmallSpeech(E2EModel):
             y_mask_clip = y_mask
             y_mel_clip = y_mel
         
-        prior, _, _ = self.prior_head(z_feature_clip, y_f0_clip)
-        mel_prior = self.mel_fn(prior.squeeze(1))
-        prior_loss = F.mse_loss(y_mel_clip.masked_select(y_mask_clip), mel_prior.masked_select(y_mask_clip))
+        pre, _, _ = self.pre_head(z_feature_clip, y_f0_clip)
+        pre_mel = self.mel_fn(pre.squeeze(1))
+        pre_loss = F.mse_loss(y_mel_clip.masked_select(y_mask_clip), pre_mel.masked_select(y_mask_clip))
         
-        z_decoder = z_feature_clip + self.mel_emb(mel_prior.detach())
+        z_decoder = z_feature_clip + self.mel_emb(pre_mel.detach())
         z_decoder = self.block(z_decoder, y_mask_clip, self.task_emb["decoder"])
         y, periodic, aperiodic = self.head(z_decoder, y_f0_clip)
         
@@ -137,7 +146,7 @@ class SmallSpeech(E2EModel):
                 "duration_loss": dur_loss,
                 "f0_loss": f0_loss,
                 "mu_loss": mu_loss,
-                "prior_loss": prior_loss,
+                "prehead_loss": pre_loss,
                 "z_text": z_text,
                 "z_feature": z_feature,
                 "x_mask": x_mask,
@@ -147,8 +156,8 @@ class SmallSpeech(E2EModel):
                 "attn": Heatmap(attn.squeeze(0)),
                 "attn_pred": Heatmap(duration_to_attention(dur_pred.expm1().clip(min=0).ceil())),
                 "mel_mu": Heatmap(mel_mu.squeeze()),
-                "prior": Audio(prior.squeeze(), self.sample_rate),
-                "prior_spc": Spectrogram(prior.squeeze()),
+                "pre": Audio(pre.squeeze(), self.sample_rate),
+                "pre_spc": Spectrogram(pre.squeeze()),
                 "periodic": Audio(periodic.squeeze(), self.sample_rate),
                 "periodic_spc": Spectrogram(periodic.squeeze()),
                 "aperiodic": Audio(aperiodic.squeeze(), self.sample_rate),
@@ -181,9 +190,9 @@ class SmallSpeech(E2EModel):
             z = slice_segment_by_id(z, id.expand(B, C, -1), dim=-1)
             f0_pred = slice_segment_by_id(f0_pred, id.expand(B, 1, -1), dim=-1)
         
-        prior, _, _ = self.prior_head(z, f0_pred)
-        prior_mel = self.mel_fn(prior.squeeze(1))
-        z = z + self.mel_emb(prior_mel)
+        pre, _, _ = self.pre_head(z, f0_pred)
+        pre_mel = self.mel_fn(pre.squeeze(1))
+        z = z + self.mel_emb(pre_mel)
         z = self.block(z, y_mask, self.task_emb["decoder"])
         y, _, _ = self.head(z, f0_pred)
         

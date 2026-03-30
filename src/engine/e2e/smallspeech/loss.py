@@ -18,7 +18,7 @@ class SmallSpeechLoss(E2EModelLoss):
         n_mels,
         lambda_mel: float = 1.0,
         lambda_mu: float = 1.0,
-        lambda_prior: float = 1.0
+        lambda_pre: float = 1.0
     ):
         super().__init__()
         self.sample_rate = sample_rate
@@ -27,7 +27,7 @@ class SmallSpeechLoss(E2EModelLoss):
         self.n_mels = n_mels
         self.lambda_mel = lambda_mel
         self.lambda_mu = lambda_mu
-        self.lambda_prior = lambda_prior
+        self.lambda_pre = lambda_pre
         
     def forward(
         self,
@@ -38,10 +38,10 @@ class SmallSpeechLoss(E2EModelLoss):
         
         assert e2e_output.outputs is not None
         mu_loss = e2e_output.outputs["mu_loss"] * self.lambda_mu
-        prior_loss = e2e_output.outputs["prior_loss"] * self.lambda_prior
+        pre_loss = e2e_output.outputs["prehead_loss"] * self.lambda_pre
         f0_loss = e2e_output.outputs["f0_loss"]
         duration_loss = e2e_output.outputs["duration_loss"]
-        total_loss = mu_loss + prior_loss + f0_loss + duration_loss
+        total_loss = mu_loss + pre_loss + f0_loss + duration_loss
         target = batch.wav.squeeze(1)
         pred = e2e_output.pred.squeeze(1)
         
@@ -65,7 +65,7 @@ class SmallSpeechLoss(E2EModelLoss):
                 "feature_matching_loss": fm_loss,
                 "reconstruct_loss": reconstruct_loss,
                 "mu_loss": mu_loss,
-                "prior_loss": prior_loss,
+                "prehead_loss": pre_loss,
                 "f0_loss": f0_loss,
                 "duration_loss": duration_loss,
             }

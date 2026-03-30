@@ -37,6 +37,7 @@ lightning_module:
     n_groups: 1
     adaptive_norm: true
     act: tangma
+    head: wtnet
   discriminator:
     _target_: interface.model.Discriminators
     discriminators:
@@ -68,7 +69,7 @@ lightning_module:
     n_mels: ${dsp.config.n_mels}
     lambda_mel: 45
     lambda_mu: 10
-    lambda_prior: 10
+    lambda_pre: 10
   discriminator_loss:
     _target_: engine.vocoder.hifi_gan.HiFiGANDiscriminatorLoss
   optimizer: ${engine.optimizer}

@@ -5,7 +5,7 @@ hydra:
 defaults:
     - _self_
     - corpus: hifi_captain_male_jp
-    - dsp: 24k
+    - dsp: 48k
     - text: ja
     - engine: acoustic/fastspeech2
     - metrics: basic
