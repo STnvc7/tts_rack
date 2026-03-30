@@ -1,14 +1,17 @@
 # モデルの研究・開発
 - 本フレームワークは各モジュールに対してインターフェースを設計しています。
 - このインターフェースに則って、自作のモジュールを追加可能です。
+- 詳しくはsrc/interface以下を確認してください。
 
 ---
 
-## Dataset / DataModule
+## DataModule
+- DataModuleの引数を変更することで、基本的な動作には対応可能です。
 - 設定ファイルにおいてfeatures_to_extractを変更することで、抽出する音響特徴量を変更することができます。
 - 抽出可能な音響特徴量は[dsp_board](git@github.com:STnvc7/dsp_board.git)のProcessorクラスのメソッドにあるものに限られます（基本的なものは揃っています）。
 - メソッド名をそのまま記述してください。　例）features_to_extract: [mel_spectrogram, pitch]
 - Processorにない特徴量を使用したい場合は、クラスを拡張してください。(下記DSPを参照)
+- 継続長が必要な場合は、require_durationをtrueにしてください。
 
 ## Engine
 - 各モデル（音響モデル、E2Eモデル、ニューラルボコーダ）のlightning_module.pyを見て、データの流れを確認してください。
