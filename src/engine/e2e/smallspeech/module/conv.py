@@ -59,11 +59,11 @@ class ConvNeXtLayer(nn.Module):
     ):
         super().__init__()
         self.norm = LayerNorm(channels, adaptive=adaptive_norm)
-        self.dw_conv = nn.Conv1d(channels, channels, kernel_size=kernel_size, padding=(kernel_size-1)//2, groups=channels, bias=False)
-        self.pw_conv1 = nn.Conv1d(channels, h_channels, 1, groups=n_groups, bias=False)
+        self.dw_conv = nn.Conv1d(channels, channels, kernel_size=kernel_size, padding=(kernel_size-1)//2, groups=channels)
+        self.pw_conv1 = nn.Conv1d(channels, h_channels, 1, groups=n_groups)
         self.shuffle = Shuffle1d(n_groups)
         self.act = Activation(act)
-        self.pw_conv2 = nn.Conv1d(h_channels, channels, 1, groups=n_groups, bias=False)
+        self.pw_conv2 = nn.Conv1d(h_channels, channels, 1, groups=n_groups)
         
     def forward(self, x, task_emb):
         res = x
